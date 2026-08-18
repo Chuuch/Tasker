@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: tasker-api
+  namespace: tasker
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: tasker-api
+
+  template:
+    metadata:
+      labels:
+        app: tasker-api
+
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+
+      containers:
+        - name: tasker-api
+          image: ghcr.io/chuuch/tasker:latest
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: DATABASE_HOST
+              value: postgres
+
+            - name: DATABASE_PORT
+              value: "5432"
+
+            - name: DATABASE_USER
+              value: tasker
+
+            - name: DATABASE_PASSWORD
+              value: tasker_password
+
+            - name: DATABASE_NAME
+              value: tasker_db
+
+            - name: DATABASE_SSLMODE
+              value: disable
