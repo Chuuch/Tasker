@@ -48,4 +48,4 @@ jobs:
         run: go test ./...
 
       - name: Build Docker image
-        run: docker build -t tasker-api:ci ./backend
+        run: docker build -t tasker-api:ci .
