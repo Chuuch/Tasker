@@ -1,0 +1,15 @@
+# Environment variables / secrets
+.env
+.env.*
+
+# Go
+backend/bin/
+
+# Node
+node_modules/
+
+# Build output
+dist/
+
+#OS
+.DS_Store
