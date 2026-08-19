@@ -27,13 +27,22 @@ spec:
 
           env:
             - name: POSTGRES_USER
-              value: tasker
+              valueFrom:
+                secretKeyRef:
+                  name: tasker-db-secret
+                  key: POSTGRES_USER
 
             - name: POSTGRES_PASSWORD
-              value: tasker_password
+              valueFrom:
+                secretKeyRef:
+                  name: tasker-db-secret
+                  key: POSTGRES_PASSWORD
 
             - name: POSTGRES_DB
-              value: tasker_db
+              valueFrom:
+                secretKeyRef:
+                  name: tasker-db-secret
+                  key: POSTGRES_DB
 
           volumeMounts:
             - name: postgres-data
