@@ -17,12 +17,34 @@ spec:
           image: migrate/migrate:v4.19.1
 
           command:
-            - migrate
+            - /bin/sh
+            - -c
 
           args:
-            - -path=/migrations
-            - -database=postgres://tasker:tasker_password@postgres:5432/tasker_db?sslmode=disable
-            - up
+            - >
+              migrate
+              -path=/migrations
+              -database=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME}?sslmode=disable
+              up
+
+          env:
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tasker-db-secret
+                  key: POSTGRES_USER
+
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tasker-db-secret
+                  key: POSTGRES_PASSWORD
+
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: tasker-db-secret
+                  key: POSTGRES_DB
 
           volumeMounts:
             - name: migrations
