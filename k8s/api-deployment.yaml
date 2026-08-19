@@ -28,13 +28,11 @@ spec:
           ports:
             - containerPort: 8080
 
+          envFrom:
+            - configMapRef:
+                name: tasker-api-config
+
           env:
-            - name: DATABASE_HOST
-              value: postgres
-
-            - name: DATABASE_PORT
-              value: "5432"
-
             - name: DATABASE_USER
               valueFrom:
                 secretKeyRef:
@@ -52,9 +50,6 @@ spec:
                 secretKeyRef:
                   name: tasker-db-secret
                   key: POSTGRES_DB
-
-            - name: DATABASE_SSLMODE
-              value: disable
 
           livenessProbe:
             httpGet:
