@@ -69,3 +69,23 @@ jobs:
         run: |
           docker push ghcr.io/chuuch/tasker:latest
           docker push ghcr.io/chuuch/tasker:${{ github.sha }}
+
+  runner-test:
+    name: Test self-hosted runner
+    runs-on: tasker-local
+
+    steps:
+      - name: Check runner
+        run: |
+          echo "Runner: $RUNNER_NAME"
+          echo "OS: $RUNNER_OS"
+
+      - name: Check Kubernetes
+        run: kubectl get nodes
+
+      - name: Check Helm
+        run: helm version
+
+      - name: Check Tasker release
+        run: helm status tasker -n tasker
+
