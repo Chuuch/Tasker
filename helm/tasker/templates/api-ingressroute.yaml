@@ -1,0 +1,20 @@
+{{- if .Values.ingressRoute.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+
+metadata:
+  name: {{ include "tasker.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+
+spec:
+  entryPoints:
+    - {{ .Values.ingressRoute.entryPoint }}
+
+  routes:
+    - match: Host(`{{ .Values.ingressRoute.host }}`)
+      kind: Rule
+
+      services:
+        - name: {{ include "tasker.fullname" . }}
+          port: {{ .Values.api.service.port }}
+{{- end }}

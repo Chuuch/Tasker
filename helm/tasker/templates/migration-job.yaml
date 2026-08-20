@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: {{ include "tasker.fullname" . }}-migration
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+
+      containers:
+        - name: migrate
+          image: {{ .Values.migration.image }}
+          imagePullPolicy: IfNotPresent
+
+          command:
+            - /bin/sh
+            - -c
+
+          args:
+            - >
+              migrate
+              -path=/migrations
+              -database=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?sslmode=${DATABASE_SSLMODE}
+              up
+
+          envFrom:
+            - configMapRef:
+                name: {{ include "tasker.fullname" . }}-config
+
+          env:
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secret.name }}
+                  key: POSTGRES_USER
+
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secret.name }}
+                  key: POSTGRES_PASSWORD
+
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secret.name }}
+                  key: POSTGRES_DB
+
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+
+      volumes:
+        - name: migrations
+          configMap:
+            name: {{ include "tasker.fullname" . }}-migrations

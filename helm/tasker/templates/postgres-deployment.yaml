@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ include "tasker.fullname" . }}-postgres
+  namespace: {{ .Release.Namespace }}
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: {{ include "tasker.fullname" . }}-postgres
+
+  template:
+    metadata:
+      labels:
+        app: {{ include "tasker.fullname" . }}-postgres
+
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.database.image }}
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secret.name }}
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secret.name }}
+                  key: POSTGRES_PASSWORD
+
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secret.name }}
+                  key: POSTGRES_DB
+
+          resources:
+            {{- toYaml .Values.database.resources | nindent 12 }}
+
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/18/docker
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-data
+
