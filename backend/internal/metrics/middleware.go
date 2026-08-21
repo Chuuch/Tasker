@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -27,12 +28,26 @@ func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
+		RequestStarted()
+		defer RequestFinished()
+
 		recorder := &responseWriter{
 			ResponseWriter: w,
 			status:         http.StatusOK,
 		}
 
 		next.ServeHTTP(recorder, r)
+
+		path := r.Pattern
+		if path == "" {
+			path = r.URL.Path
+		}
+
+		if len(path) > 0 {
+			if i := strings.IndexByte(path, ' '); i >= 0 {
+				path = path[i+1:]
+			}
+		}
 
 		ObserveRequest(
 			r.Method,

@@ -13,7 +13,7 @@ var (
 			Name: "tasker_http_requests_total",
 			Help: "Total number of HTTP requests processed by Tasker.",
 		},
-		[]string{"method", "path", "status"},
+		[]string{"method", "route", "status"},
 	)
 
 	HTTPRequestDuration = prometheus.NewHistogramVec(
@@ -23,12 +23,20 @@ var (
 		},
 		[]string{"method", "path"},
 	)
+
+	HTTPRequestsInFlight = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "tasker_http_requests_in_flight",
+			Help: "Number of HTTP requests currenty being processed by Tasker.",
+		},
+	)
 )
 
 func Register() {
 	prometheus.MustRegister(
 		HTTPRequestsTotal,
 		HTTPRequestDuration,
+		HTTPRequestsInFlight,
 	)
 }
 
@@ -43,4 +51,12 @@ func ObserveRequest(method, path string, status int, duration time.Duration) {
 		method,
 		path,
 	).Observe(duration.Seconds())
+}
+
+func RequestStarted() {
+	HTTPRequestsInFlight.Inc()
+}
+
+func RequestFinished() {
+	HTTPRequestsInFlight.Dec()
 }
