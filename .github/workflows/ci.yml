@@ -81,7 +81,7 @@ jobs:
 
       - name: Deploy with Helm
         run: |
-          helm upgrade -- install tasker helm/tasker \
+          helm upgrade --install tasker helm/tasker \
           --namespace tasker \
           --create-namespace \
           --set image.tag=${{ github.sha }} \
