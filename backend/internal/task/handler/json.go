@@ -14,7 +14,7 @@ func decodeJSON(
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	
+
 	if err := decoder.Decode(dst); err != nil {
 		return err
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/Chuuch/Tasker/backend/internal/database"
 	"github.com/Chuuch/Tasker/backend/internal/http/router"
 	"github.com/Chuuch/Tasker/backend/internal/logger"
+	"github.com/Chuuch/Tasker/backend/internal/metrics"
 	"github.com/Chuuch/Tasker/backend/internal/task/handler"
 	"github.com/Chuuch/Tasker/backend/internal/task/repository"
 	"github.com/Chuuch/Tasker/backend/internal/task/service"
@@ -21,6 +22,7 @@ func main() {
 
 	log := logger.New()
 	cfg := config.Load()
+	metrics.Register()
 
 	ctx, cancel := context.WithTimeout(
 		context.Background(),

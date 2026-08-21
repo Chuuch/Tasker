@@ -3,7 +3,9 @@ package router
 import (
 	"net/http"
 
+	"github.com/Chuuch/Tasker/backend/internal/metrics"
 	"github.com/Chuuch/Tasker/backend/internal/task/handler"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func NewRouter(
@@ -16,10 +18,12 @@ func NewRouter(
 		_, _ = w.Write([]byte("OK"))
 	})
 
+	mux.Handle("/metrics", promhttp.Handler())
+
 	mux.HandleFunc("GET /api/v1/tasks", taskHandler.GetAll)
 	mux.HandleFunc("GET /api/v1/tasks/{id}", taskHandler.GetByID)
 	mux.HandleFunc("POST /api/v1/tasks", taskHandler.Create)
 	mux.HandleFunc("PUT /api/v1/tasks/{id}", taskHandler.Update)
 	mux.HandleFunc("DELETE /api/v1/tasks/{id}", taskHandler.Delete)
-	return mux
+	return metrics.Middleware(mux)
 }

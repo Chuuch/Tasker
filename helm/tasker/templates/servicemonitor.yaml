@@ -1,0 +1,20 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+
+metadata:
+  name: {{ include "tasker.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: monitoring
+
+spec:
+  selector:
+    matchLabels:
+      {{- include "tasker.labels" . | nindent 6 }}
+
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+{{- end }}

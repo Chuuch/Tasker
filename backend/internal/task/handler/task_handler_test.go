@@ -17,7 +17,7 @@ type mockTaskService struct {
 	createdTitle       string
 	createdDescription string
 	createCalls        int
-	createdTask model.Task
+	createdTask        model.Task
 
 	getTasksCalls int
 	tasks         []model.Task
@@ -583,10 +583,10 @@ func TestDeleteTaskInvalidID(t *testing.T) {
 func TestCreateTaskValidJSON(t *testing.T) {
 	service := &mockTaskService{
 		createdTask: model.Task{
-			ID: 1,
-			Title: "Learn Go",
+			ID:          1,
+			Title:       "Learn Go",
 			Description: "Learn Kubernetes",
-			Completed: false,
+			Completed:   false,
 		},
 	}
 
@@ -624,7 +624,6 @@ func TestCreateTaskValidJSON(t *testing.T) {
 		)
 	}
 }
-
 
 func TestCreateTaskMalformedJSON(t *testing.T) {
 	service := &mockTaskService{}
@@ -677,7 +676,7 @@ func TestCreateTaskUnknownField(t *testing.T) {
 		"/api/v1/tasks",
 		body,
 	)
-	
+
 	request.Header.Set("Content-Type", "application/json")
 
 	response := httptest.NewRecorder()
@@ -746,8 +745,8 @@ func TestCreateTaskOversizedBody(t *testing.T) {
 
 	body := strings.NewReader(
 		`{"title": "Large Task","description":"}` +
-		largeDescription +
-		`"}"`,
+			largeDescription +
+			`"}"`,
 	)
 
 	request := httptest.NewRequest(

@@ -4,6 +4,8 @@ kind: Service
 metadata:
   name: {{ include "tasker.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tasker.labels" . | nindent 4 }}
 
 spec:
   type: {{ .Values.api.service.type }}
