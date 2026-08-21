@@ -70,22 +70,20 @@ jobs:
           docker push ghcr.io/chuuch/tasker:latest
           docker push ghcr.io/chuuch/tasker:${{ github.sha }}
 
-  runner-test:
-    name: Test self-hosted runner
+  deploy:
+    name: Deploy to Kubernetes
+    needs: test
     runs-on: tasker-local
 
     steps:
-      - name: Check runner
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy with Helm
         run: |
-          echo "Runner: $RUNNER_NAME"
-          echo "OS: $RUNNER_OS"
-
-      - name: Check Kubernetes
-        run: kubectl get nodes
-
-      - name: Check Helm
-        run: helm version
-
-      - name: Check Tasker release
-        run: helm status tasker -n tasker
+          helm upgrade -- install tasker helm/tasker \
+          --namespace tasker \
+          --create-namespace \
+          --set image.tag=${{ github.sha }} \
+          --wait
 
