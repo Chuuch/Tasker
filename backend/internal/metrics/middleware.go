@@ -8,24 +8,37 @@ import (
 
 type responseWriter struct {
 	http.ResponseWriter
-	status int
+	status      int
+	wroteHeader bool
 }
 
 func (w *responseWriter) WriteHeader(status int) {
+	if w.wroteHeader {
+		return
+	}
 	w.status = status
+	w.wroteHeader = true
 	w.ResponseWriter.WriteHeader(status)
 }
 
 func (w *responseWriter) Write(body []byte) (int, error) {
-	if w.status == 0 {
-		w.status = http.StatusOK
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
 	}
-
 	return w.ResponseWriter.Write(body)
+}
+
+func (w *responseWriter) unwrap() http.ResponseWriter {
+	return w.ResponseWriter
 }
 
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if shouldSkipMetrics(r.URL.Path) {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		start := time.Now()
 
 		RequestStarted()
@@ -38,22 +51,25 @@ func Middleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(recorder, r)
 
-		path := r.Pattern
-		if path == "" {
-			path = r.URL.Path
-		}
-
-		if len(path) > 0 {
-			if i := strings.IndexByte(path, ' '); i >= 0 {
-				path = path[i+1:]
-			}
-		}
-
 		ObserveRequest(
 			r.Method,
-			r.Pattern,
+			normalizeRoute(r.Pattern, r.URL.Path),
 			recorder.status,
 			time.Since(start),
 		)
 	})
+}
+func shouldSkipMetrics(path string) bool {
+	return path == "/health" || path == "/metrics"
+}
+
+func normalizeRoute(pattern, rawPath string) string {
+	if pattern == "" {
+		return "unmatched"
+	}
+
+	if i := strings.IndexByte(pattern, ' '); i >= 0 {
+		return pattern[i+1:]
+	}
+	return pattern
 }

@@ -20,8 +20,8 @@ import (
 
 func main() {
 
-	log := logger.New()
 	cfg := config.Load()
+	log := logger.New(cfg.LogLevel)
 	metrics.Register()
 
 	ctx, cancel := context.WithTimeout(

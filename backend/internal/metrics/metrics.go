@@ -7,6 +7,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+var httpDurationBuckets = []float64{
+	0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10,
+}
+
 var (
 	HTTPRequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -40,16 +44,16 @@ func Register() {
 	)
 }
 
-func ObserveRequest(method, path string, status int, duration time.Duration) {
+func ObserveRequest(method, route string, status int, duration time.Duration) {
 	HTTPRequestsTotal.WithLabelValues(
 		method,
-		path,
+		route,
 		strconv.Itoa(status),
 	).Inc()
 
 	HTTPRequestDuration.WithLabelValues(
 		method,
-		path,
+		route,
 	).Observe(duration.Seconds())
 }
 

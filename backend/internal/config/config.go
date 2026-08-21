@@ -1,11 +1,14 @@
 package config
 
 import (
+	"log/slog"
 	"os"
+	"strings"
 )
 
 type Config struct {
 	Port             string
+	LogLevel        slog.Level
 	DatabaseHost     string
 	DatabasePort     string
 	DatabaseUser     string
@@ -17,6 +20,7 @@ type Config struct {
 func Load() Config {
 	return Config{
 		Port:             getEnv("PORT", "8080"),
+		LogLevel: parseLogLevel(getEnv("LOG_LEVEL", "info")),
 		DatabaseHost:     getEnv("DATABASE_HOST", "localhost"),
 		DatabasePort:     getEnv("DATABASE_PORT", "5432"),
 		DatabaseUser:     getEnv("DATABASE_USER", "tasker"),
@@ -27,10 +31,21 @@ func Load() Config {
 }
 
 func getEnv(key, fallback string) string {
-	value := os.Getenv(key)
-
-	if value == "" {
-		return fallback
+	if value := os.Getenv(key); value != "" {
+		return value
 	}
-	return value
+	return fallback
+}
+
+func parseLogLevel(raw string) slog.Level {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "debug":
+		return slog.LevelDebug
+		case "warn", "warning":
+			return slog.LevelWarn
+	case "error":
+			return slog.LevelError
+	default:
+			return slog.LevelInfo
+	}
 }
